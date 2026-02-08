@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ASP Poster Generator (Auto Logo)</title>
+    <title>ASP Poster Generator (Fixed Download)</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -101,6 +101,7 @@
             overflow: hidden; 
             border: 2px solid #475569;
             border-radius: 8px;
+            /* Height is set by JS, but we'll override it during download */
         }
 
         /* --- THE POSTER (Fixed 1080x1350) --- */
@@ -111,9 +112,10 @@
             top: 0; left: 0;
             transform-origin: 0 0; 
             background-color: #0f172a;
+            /* Background Image from your code */
             background-image: 
                 linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.9)),
-                url('https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+                url('https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=774&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -129,7 +131,7 @@
             font-weight: 700;
             line-height: 1.1;
             color: white;
-            margin-bottom: 25px; /* Spacing below title */
+            margin-bottom: 25px; 
             text-shadow: 0 4px 15px rgba(0,0,0,0.8);
         }
 
@@ -139,11 +141,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* REDUCED GAP between Date line and Location line */
             gap: 10px; 
         }
 
-        /* Single Row Pill */
         .date-time-row {
             display: inline-flex;
             align-items: center;
@@ -152,9 +152,7 @@
             padding: 8px 30px;
             border-radius: 50px;
             border: 1px solid rgba(251, 191, 36, 0.3);
-            
-            /* Text Settings */
-            font-size: 2.5rem; /* SAME SIZE AS LOCATION */
+            font-size: 2.5rem; 
             color: var(--text-gold);
             font-weight: 600;
             white-space: nowrap;
@@ -164,7 +162,7 @@
         .date-time-row i:first-child { margin-left: 0; }
 
         .location {
-            font-size: 2.5rem; /* SAME SIZE AS DATE */
+            font-size: 2.5rem;
             color: var(--text-gold);
             font-weight: 600;
             display: flex;
@@ -224,7 +222,6 @@
         .st-name { font-size: 2.4rem; font-weight: 700; color: white; margin-bottom: 8px; line-height: 1.2; }
         .st-desc { font-size: 1.6rem; color: #e2e8f0; padding: 0 10px; line-height: 1.4; }
 
-        /* --- FOOTER (Logo) --- */
         .footer {
             border-top: 2px solid rgba(255,255,255,0.2);
             width: 100%;
@@ -235,7 +232,7 @@
         }
         
         .footer-logo-img {
-            height: 140px; /* Large enough for Logo+Text */
+            height: 140px;
             max-width: 80%;
             object-fit: contain;
         }
@@ -249,7 +246,7 @@
         
         <div class="input-group">
             <label>Date & Day</label>
-            <input type="text" id="in-date" value="১৩ ফেব্রুয়ারি ২০২৬ | শুক্রবার" oninput="updatePoster()">
+            <input type="text" id="in-date" value="৬ ফেব্রুয়ারি ২০২৫ | শুক্রবার" oninput="updatePoster()">
         </div>
         <div class="input-group">
             <label>Time</label>
@@ -331,7 +328,7 @@
             </div>
 
             <div class="footer">
-                <img id="footer-logo" class="footer-logo-img" src="./asp-logo-dark.png" alt="ASP Logo" onerror="this.style.display='none'">
+                <img id="footer-logo" class="footer-logo-img" src="asplogo.png" alt="ASP Logo" onerror="this.style.display='none'">
             </div>
 
         </div>
@@ -339,18 +336,14 @@
 
     <script>
         function updatePoster() {
-            // Header
             document.getElementById('out-date').innerText = document.getElementById('in-date').value;
             document.getElementById('out-time').innerText = document.getElementById('in-time').value;
             document.getElementById('out-loc').innerText = document.getElementById('in-loc').value;
 
-            // Students
             document.getElementById('out-n1').innerText = document.getElementById('in-n1').value;
             document.getElementById('out-d1').innerText = document.getElementById('in-d1').value;
-
             document.getElementById('out-n2').innerText = document.getElementById('in-n2').value;
             document.getElementById('out-d2').innerText = document.getElementById('in-d2').value;
-
             document.getElementById('out-n3').innerText = document.getElementById('in-n3').value;
             document.getElementById('out-d3').innerText = document.getElementById('in-d3').value;
         }
@@ -365,7 +358,6 @@
             }
         }
 
-        // Mobile Scaler
         function resizePreview() {
             const container = document.getElementById('preview-window');
             const poster = document.getElementById('poster');
@@ -382,20 +374,42 @@
         window.addEventListener('resize', resizePreview);
 
         function downloadPoster() {
+            const container = document.getElementById('preview-window');
             const poster = document.getElementById('poster');
+            
+            // 1. Save current state
             const currentTransform = poster.style.transform;
+            const currentHeight = container.style.height;
+            const currentOverflow = container.style.overflow;
+
+            // 2. Prepare for capture:
+            //    - Reset scale to 1 (full size)
+            //    - Force container to full height so nothing is clipped
+            //    - Allow overflow so the full 1350px is visible to html2canvas
             poster.style.transform = 'scale(1)'; 
+            container.style.height = '1350px';
+            container.style.overflow = 'visible';
+
+            // 3. Scroll to top to prevent misalignment
+            window.scrollTo(0,0);
             
             html2canvas(poster, {
                 scale: 1, 
                 backgroundColor: null,
-                useCORS: true
+                useCORS: true,
+                width: 1080,
+                height: 1350,
+                scrollY: 0
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'ASP_Final_Poster.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
+
+                // 4. Restore the preview state
                 poster.style.transform = currentTransform;
+                container.style.height = currentHeight;
+                container.style.overflow = currentOverflow;
             });
         }
     </script>
