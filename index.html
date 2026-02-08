@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ASP Poster Generator (Auto Logo)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --accent-blue: #38bdf8;
+            --text-gold: #fbbf24;
+            --input-bg: #1e293b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+
+        body {
+            background-color: #0f172a;
+            color: white;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- CONTROLS --- */
+        .controls {
+            width: 100%;
+            max-width: 500px;
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .input-group { margin-bottom: 12px; }
+        label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; }
+        
+        input {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 16px; 
+        }
+
+        .file-upload-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #334155;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 5px;
+            border: 1px dashed #94a3b8;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        .file-upload-btn:hover { background: #475569; border-color: white; }
+        .file-upload-btn i { margin-right: 8px; }
+        input[type="file"] { display: none; } 
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            border-top: 1px solid #334155;
+            margin: 15px 0 10px 0;
+            padding-top: 10px;
+        }
+
+        button#download-btn {
+            background: var(--accent-blue);
+            color: #020617;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        /* --- PREVIEW WINDOW --- */
+        #preview-window {
+            width: 100%;
+            max-width: 500px; 
+            position: relative;
+            background: #000;
+            overflow: hidden; 
+            border: 2px solid #475569;
+            border-radius: 8px;
+        }
+
+        /* --- THE POSTER (Fixed 1080x1350) --- */
+        #poster {
+            width: 1080px;
+            height: 1350px;
+            position: absolute;
+            top: 0; left: 0;
+            transform-origin: 0 0; 
+            background-color: #0f172a;
+            background-image: 
+                linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.9)),
+                url('https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 50px;
+            text-align: center;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        .title-main {
+            font-size: 5rem; 
+            font-weight: 700;
+            line-height: 1.1;
+            color: white;
+            margin-bottom: 25px; /* Spacing below title */
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+
+        .meta-container {
+            margin-bottom: 50px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* REDUCED GAP between Date line and Location line */
+            gap: 10px; 
+        }
+
+        /* Single Row Pill */
+        .date-time-row {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            padding: 8px 30px;
+            border-radius: 50px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            
+            /* Text Settings */
+            font-size: 2.5rem; /* SAME SIZE AS LOCATION */
+            color: var(--text-gold);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .date-time-row i { margin: 0 10px; color: var(--text-gold); }
+        .date-time-row i:first-child { margin-left: 0; }
+
+        .location {
+            font-size: 2.5rem; /* SAME SIZE AS DATE */
+            color: var(--text-gold);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* --- CARDS --- */
+        .cards-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 30px;
+            margin-top: auto;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 25px;
+            padding-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .pill {
+            background: #94a3b8;
+            color: #0f172a;
+            width: 80%;
+            padding: 12px 0;
+            font-size: 2rem;
+            font-weight: 700;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .avatar {
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            border: 8px solid rgba(255,255,255,0.9);
+            overflow: hidden;
+            background: #334155;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .st-name { font-size: 2.4rem; font-weight: 700; color: white; margin-bottom: 8px; line-height: 1.2; }
+        .st-desc { font-size: 1.6rem; color: #e2e8f0; padding: 0 10px; line-height: 1.4; }
+
+        /* --- FOOTER (Logo) --- */
+        .footer {
+            border-top: 2px solid rgba(255,255,255,0.2);
+            width: 100%;
+            padding-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .footer-logo-img {
+            height: 140px; /* Large enough for Logo+Text */
+            max-width: 80%;
+            object-fit: contain;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2 style="text-align:center; color:var(--accent-blue); margin-bottom:15px;">ASP Poster Tool</h2>
+        
+        <div class="input-group">
+            <label>Date & Day</label>
+            <input type="text" id="in-date" value="১৩ ফেব্রুয়ারি ২০২৬ | শুক্রবার" oninput="updatePoster()">
+        </div>
+        <div class="input-group">
+            <label>Time</label>
+            <input type="text" id="in-time" value="সকাল ৯:০০" oninput="updatePoster()">
+        </div>
+        <div class="input-group">
+            <label>Location</label>
+            <input type="text" id="in-loc" value="রাজধরপুর মাধ্যমিক বিদ্যালয়" oninput="updatePoster()">
+        </div>
+
+        <div class="section-title">Instructor 1 (Primary)</div>
+        <input type="text" id="in-n1" value="গোলাম রাব্বি" oninput="updatePoster()" placeholder="Name">
+        <input type="text" id="in-d1" value="যন্ত্রকৌশল, খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়" oninput="updatePoster()" placeholder="Details">
+        <label class="file-upload-btn">
+            <i class="fas fa-camera"></i> Instructor Photo 1
+            <input type="file" accept="image/*" onchange="loadImg(this, 'img1')">
+        </label>
+
+        <div class="section-title">Instructor 2 (Junior)</div>
+        <input type="text" id="in-n2" value="তানভীর রানা রাব্বি" oninput="updatePoster()" placeholder="Name">
+        <input type="text" id="in-d2" value="কম্পিউটার বিজ্ঞান ও প্রকৌশল, কম্পিউটার বিজ্ঞান ও প্রকৌশল" oninput="updatePoster()" placeholder="Details">
+        <label class="file-upload-btn">
+            <i class="fas fa-camera"></i> Instructor Photo 2
+            <input type="file" accept="image/*" onchange="loadImg(this, 'img2')">
+        </label>
+
+        <div class="section-title">Instructor 3 (Secondary)</div>
+        <input type="text" id="in-n3" value="আশিক রেজা" oninput="updatePoster()" placeholder="Name">
+        <input type="text" id="in-d3" value="পারমাণবিক প্রকৌশল, ঢাকা বিশ্ববিদ্যালয়" oninput="updatePoster()" placeholder="Details">
+        <label class="file-upload-btn">
+            <i class="fas fa-camera"></i> Instructor Photo 3
+            <input type="file" accept="image/*" onchange="loadImg(this, 'img3')">
+        </label>
+
+        <button id="download-btn" onclick="downloadPoster()">Download HD Poster</button>
+    </div>
+
+    <div id="preview-window">
+        <div id="poster">
+            
+            <div class="title-main">
+                <div>আমার স্কুল প্রজেক্ট এর নিয়মিত</div>
+                <div>গণিত ও বিজ্ঞান ক্লাস</div>
+            </div>
+
+            <div class="meta-container">
+                <div class="date-time-row">
+                    <i class="far fa-calendar-alt"></i> 
+                    <span id="out-date">৬ ফেব্রুয়ারি ২০২৫ | শুক্রবার</span> 
+                    <span>&nbsp;|&nbsp;</span>
+                    <i class="far fa-clock"></i> 
+                    <span id="out-time">সকাল ৯:০০</span>
+                </div>
+                
+                <div class="location">
+                    <i class="fas fa-map-marker-alt"></i> <span id="out-loc">রাজধরপুর মাধ্যমিক বিদ্যালয়</span>
+                </div>
+            </div>
+
+            <div class="cards-row">
+                <div class="card">
+                    <div class="pill" style="background:#a5b4fc">প্রাইমারি</div>
+                    <div class="avatar"><img id="img1" src="https://via.placeholder.com/250/334155/FFFFFF?text=IMG" alt=""></div>
+                    <div class="st-name" id="out-n1">গোলাম রাব্বি</div>
+                    <div class="st-desc" id="out-d1">যন্ত্রকৌশল, খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়</div>
+                </div>
+                <div class="card">
+                    <div class="pill" style="background:#93c5fd">জুনিয়র</div>
+                    <div class="avatar"><img id="img2" src="https://via.placeholder.com/250/334155/FFFFFF?text=IMG" alt=""></div>
+                    <div class="st-name" id="out-n2">তানভীর রানা রাব্বি</div>
+                    <div class="st-desc" id="out-d2">কম্পিউটার বিজ্ঞান ও প্রকৌশল, কম্পিউটার বিজ্ঞান ও প্রকৌশল</div>
+                </div>
+                <div class="card">
+                    <div class="pill" style="background:#cbd5e1">সেকেন্ডারি</div>
+                    <div class="avatar"><img id="img3" src="https://via.placeholder.com/250/334155/FFFFFF?text=IMG" alt=""></div>
+                    <div class="st-name" id="out-n3">আশিক রেজা</div>
+                    <div class="st-desc" id="out-d3">পারমাণবিক প্রকৌশল, ঢাকা বিশ্ববিদ্যালয়</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <img id="footer-logo" class="footer-logo-img" src="./asp-logo-dark.png" alt="ASP Logo" onerror="this.style.display='none'">
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function updatePoster() {
+            // Header
+            document.getElementById('out-date').innerText = document.getElementById('in-date').value;
+            document.getElementById('out-time').innerText = document.getElementById('in-time').value;
+            document.getElementById('out-loc').innerText = document.getElementById('in-loc').value;
+
+            // Students
+            document.getElementById('out-n1').innerText = document.getElementById('in-n1').value;
+            document.getElementById('out-d1').innerText = document.getElementById('in-d1').value;
+
+            document.getElementById('out-n2').innerText = document.getElementById('in-n2').value;
+            document.getElementById('out-d2').innerText = document.getElementById('in-d2').value;
+
+            document.getElementById('out-n3').innerText = document.getElementById('in-n3').value;
+            document.getElementById('out-d3').innerText = document.getElementById('in-d3').value;
+        }
+
+        function loadImg(input, targetId) {
+            if(input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) { 
+                    document.getElementById(targetId).src = e.target.result; 
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Mobile Scaler
+        function resizePreview() {
+            const container = document.getElementById('preview-window');
+            const poster = document.getElementById('poster');
+            const availableWidth = container.offsetWidth;
+            const posterWidth = 1080;
+            const posterHeight = 1350;
+            const scale = availableWidth / posterWidth;
+
+            poster.style.transform = `scale(${scale})`;
+            container.style.height = `${posterHeight * scale}px`;
+        }
+
+        window.addEventListener('load', resizePreview);
+        window.addEventListener('resize', resizePreview);
+
+        function downloadPoster() {
+            const poster = document.getElementById('poster');
+            const currentTransform = poster.style.transform;
+            poster.style.transform = 'scale(1)'; 
+            
+            html2canvas(poster, {
+                scale: 1, 
+                backgroundColor: null,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'ASP_Final_Poster.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                poster.style.transform = currentTransform;
+            });
+        }
+    </script>
+</body>
+</html>
