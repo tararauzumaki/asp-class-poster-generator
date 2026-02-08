@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ASP Poster Generator (Fixed Download)</title>
+    <title>ASP Poster Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -90,7 +90,10 @@
             font-size: 1.1rem;
             margin-top: 15px;
             cursor: pointer;
+            transition: 0.2s;
         }
+        button#download-btn:hover { background: #0ea5e9; }
+        button#download-btn:active { transform: scale(0.98); }
 
         /* --- PREVIEW WINDOW --- */
         #preview-window {
@@ -101,7 +104,6 @@
             overflow: hidden; 
             border: 2px solid #475569;
             border-radius: 8px;
-            /* Height is set by JS, but we'll override it during download */
         }
 
         /* --- THE POSTER (Fixed 1080x1350) --- */
@@ -112,7 +114,7 @@
             top: 0; left: 0;
             transform-origin: 0 0; 
             background-color: #0f172a;
-            /* Background Image from your code */
+            /* Background Image */
             background-image: 
                 linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.9)),
                 url('https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=774&auto=format&fit=crop');
@@ -281,7 +283,7 @@
             <input type="file" accept="image/*" onchange="loadImg(this, 'img3')">
         </label>
 
-        <button id="download-btn" onclick="downloadPoster()">Download HD Poster</button>
+        <button id="download-btn" onclick="downloadPoster()">Download Poster</button>
     </div>
 
     <div id="preview-window">
@@ -358,6 +360,7 @@
             }
         }
 
+        // --- PREVIEW SCALER (Mobile Friendly) ---
         function resizePreview() {
             const container = document.getElementById('preview-window');
             const poster = document.getElementById('poster');
@@ -373,43 +376,48 @@
         window.addEventListener('load', resizePreview);
         window.addEventListener('resize', resizePreview);
 
+        // --- OTAKU BANGLA CLONING DOWNLOAD (Glitch Free) ---
         function downloadPoster() {
-            const container = document.getElementById('preview-window');
-            const poster = document.getElementById('poster');
+            const original = document.getElementById('poster');
             
-            // 1. Save current state
-            const currentTransform = poster.style.transform;
-            const currentHeight = container.style.height;
-            const currentOverflow = container.style.overflow;
+            // 1. Create a deep clone of the poster
+            const clone = original.cloneNode(true);
 
-            // 2. Prepare for capture:
-            //    - Reset scale to 1 (full size)
-            //    - Force container to full height so nothing is clipped
-            //    - Allow overflow so the full 1350px is visible to html2canvas
-            poster.style.transform = 'scale(1)'; 
-            container.style.height = '1350px';
-            container.style.overflow = 'visible';
-
-            // 3. Scroll to top to prevent misalignment
-            window.scrollTo(0,0);
+            // 2. Style the clone to be hidden but fully "rendered" by the browser
+            // We move it way off-screen to the left so the user never sees it jumping
+            clone.style.position = 'fixed';
+            clone.style.left = '-9999px'; 
+            clone.style.top = '0px';
+            clone.style.transform = 'none'; // Force 100% scale (HD)
+            clone.style.width = '1080px';
+            clone.style.height = '1350px';
+            clone.style.zIndex = '-1000';
+            clone.style.borderRadius = '0'; // Ensure clean corners
             
-            html2canvas(poster, {
-                scale: 1, 
-                backgroundColor: null,
+            // 3. Append to body so html2canvas can find it
+            document.body.appendChild(clone);
+
+            // 4. Capture the CLONE, not the original
+            html2canvas(clone, {
+                scale: 1, // Capture at 1:1 of the 1080px width
                 useCORS: true,
+                backgroundColor: null,
                 width: 1080,
                 height: 1350,
-                scrollY: 0
+                windowWidth: 1080,
+                windowHeight: 1350
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'ASP_Final_Poster.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-
-                // 4. Restore the preview state
-                poster.style.transform = currentTransform;
-                container.style.height = currentHeight;
-                container.style.overflow = currentOverflow;
+                
+                // 5. Clean up the clone
+                document.body.removeChild(clone);
+            }).catch(err => {
+                console.error("Download Error:", err);
+                alert("Could not generate image. Please check console.");
+                document.body.removeChild(clone);
             });
         }
     </script>
