@@ -42,7 +42,7 @@
         .input-group { margin-bottom: 12px; }
         label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; }
         
-        input {
+        input[type="text"] {
             width: 100%;
             background: #0f172a;
             border: 1px solid #334155;
@@ -50,6 +50,7 @@
             padding: 10px;
             border-radius: 6px;
             font-size: 16px; 
+            margin-bottom: 8px;
         }
 
         .file-upload-btn {
@@ -69,6 +70,39 @@
         .file-upload-btn:hover { background: #475569; border-color: white; }
         .file-upload-btn i { margin-right: 8px; }
         input[type="file"] { display: none; } 
+
+        /* Slider Controls */
+        .pos-controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+        .slider-group { flex: 1; }
+        .slider-group label { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px; }
+        input[type="range"].pos-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            background: #334155;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+            padding: 0;
+            border: none;
+        }
+        input[type="range"].pos-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
 
         .section-title {
             font-size: 1rem;
@@ -117,7 +151,6 @@
             top: 0; left: 0;
             transform-origin: 0 0; 
             background-color: #0f172a;
-            /* Background Image */
             background-image: 
                 linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.9)),
                 url('https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=774&auto=format&fit=crop');
@@ -187,10 +220,8 @@
             margin-bottom: 40px;
         }
 
-        /* !!! FIXED GLASS STYLE (NO SHADOWS) !!! */
         .card {
             flex: 1;
-            /* Transparent Glass Background */
             background: rgba(30, 41, 59, 0.6); 
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 25px;
@@ -198,7 +229,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* REMOVED SHADOW to fix square artifacts */
             box-shadow: none; 
         }
 
@@ -211,7 +241,6 @@
             font-weight: 700;
             border-radius: 0 0 20px 20px;
             margin-bottom: 30px;
-            /* REMOVED SHADOW to fix square artifacts */
             box-shadow: none; 
             z-index: 10;
         }
@@ -224,11 +253,20 @@
             overflow: hidden;
             background: #334155;
             margin-bottom: 25px;
-            /* REMOVED SHADOW to fix square artifacts */
             box-shadow: none; 
             z-index: 10;
         }
-        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Switched from img to div for better html2canvas support */
+        .avatar-bg {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: 50% 50%;
+            background-repeat: no-repeat;
+            background-color: white;
+            background-image: url('https://via.placeholder.com/250/334155/FFFFFF?text=IMG');
+        }
 
         .st-name { font-size: 2.4rem; font-weight: 700; color: white; margin-bottom: 8px; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .st-desc { font-size: 1.6rem; color: #e2e8f0; padding: 0 10px; line-height: 1.4; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
@@ -275,6 +313,16 @@
             <i class="fas fa-camera"></i> Instructor Photo 1
             <input type="file" accept="image/*" onchange="loadImg(this, 'img1')">
         </label>
+        <div class="pos-controls">
+            <div class="slider-group">
+                <label>X-Axis <span>↔</span></label>
+                <input type="range" class="pos-slider" id="x1" min="0" max="100" value="50" oninput="adjustPos(1)">
+            </div>
+            <div class="slider-group">
+                <label>Y-Axis <span>↕</span></label>
+                <input type="range" class="pos-slider" id="y1" min="0" max="100" value="50" oninput="adjustPos(1)">
+            </div>
+        </div>
 
         <div class="section-title">Instructor 2 (Junior)</div>
         <input type="text" id="in-n2" value="তানভীর রানা রাব্বি" oninput="updatePoster()" placeholder="Name">
@@ -283,6 +331,16 @@
             <i class="fas fa-camera"></i> Instructor Photo 2
             <input type="file" accept="image/*" onchange="loadImg(this, 'img2')">
         </label>
+        <div class="pos-controls">
+            <div class="slider-group">
+                <label>X-Axis <span>↔</span></label>
+                <input type="range" class="pos-slider" id="x2" min="0" max="100" value="50" oninput="adjustPos(2)">
+            </div>
+            <div class="slider-group">
+                <label>Y-Axis <span>↕</span></label>
+                <input type="range" class="pos-slider" id="y2" min="0" max="100" value="50" oninput="adjustPos(2)">
+            </div>
+        </div>
 
         <div class="section-title">Instructor 3 (Secondary)</div>
         <input type="text" id="in-n3" value="আশিক রেজা" oninput="updatePoster()" placeholder="Name">
@@ -291,6 +349,16 @@
             <i class="fas fa-camera"></i> Instructor Photo 3
             <input type="file" accept="image/*" onchange="loadImg(this, 'img3')">
         </label>
+        <div class="pos-controls">
+            <div class="slider-group">
+                <label>X-Axis <span>↔</span></label>
+                <input type="range" class="pos-slider" id="x3" min="0" max="100" value="50" oninput="adjustPos(3)">
+            </div>
+            <div class="slider-group">
+                <label>Y-Axis <span>↕</span></label>
+                <input type="range" class="pos-slider" id="y3" min="0" max="100" value="50" oninput="adjustPos(3)">
+            </div>
+        </div>
 
         <button id="download-btn" onclick="startDownload()">Download Poster</button>
     </div>
@@ -320,19 +388,19 @@
             <div class="cards-row">
                 <div class="card">
                     <div class="pill" style="background:#a5b4fc">প্রাইমারি</div>
-                    <div class="avatar"><img id="img1" src="https://via.placeholder.com/250/334155/FFFFFF?text=IMG" alt=""></div>
+                    <div class="avatar"><div id="img1" class="avatar-bg"></div></div>
                     <div class="st-name" id="out-n1">গোলাম রাব্বি</div>
                     <div class="st-desc" id="out-d1">যন্ত্রকৌশল, খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়</div>
                 </div>
                 <div class="card">
                     <div class="pill" style="background:#93c5fd">জুনিয়র</div>
-                    <div class="avatar"><img id="img2" src="https://via.placeholder.com/250/334155/FFFFFF?text=IMG" alt=""></div>
+                    <div class="avatar"><div id="img2" class="avatar-bg"></div></div>
                     <div class="st-name" id="out-n2">তানভীর রানা রাব্বি</div>
                     <div class="st-desc" id="out-d2">কম্পিউটার বিজ্ঞান ও প্রকৌশল, ইউনিভার্সিটি অব ইনফরমেশন টেকনোলজি অ্যান্ড সায়েন্সেস</div>
                 </div>
                 <div class="card">
                     <div class="pill" style="background:#cbd5e1">সেকেন্ডারি</div>
-                    <div class="avatar"><img id="img3" src="https://via.placeholder.com/250/334155/FFFFFF?text=IMG" alt=""></div>
+                    <div class="avatar"><div id="img3" class="avatar-bg"></div></div>
                     <div class="st-name" id="out-n3">আশিক রেজা</div>
                     <div class="st-desc" id="out-d3">পারমাণবিক প্রকৌশল, ঢাকা বিশ্ববিদ্যালয়</div>
                 </div>
@@ -359,14 +427,22 @@
             document.getElementById('out-d3').innerText = document.getElementById('in-d3').value;
         }
 
+        // Updated to use background-image
         function loadImg(input, targetId) {
             if(input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function(e) { 
-                    document.getElementById(targetId).src = e.target.result; 
+                    document.getElementById(targetId).style.backgroundImage = `url('${e.target.result}')`; 
                 }
                 reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        // Function to adjust background position
+        function adjustPos(id) {
+            const x = document.getElementById(`x${id}`).value;
+            const y = document.getElementById(`y${id}`).value;
+            document.getElementById(`img${id}`).style.backgroundPosition = `${x}% ${y}%`;
         }
 
         // --- PREVIEW SCALER ---
