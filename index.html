@@ -18,23 +18,53 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
 
+        /* --- LAYOUT WRAPPERS --- */
         body {
             background-color: #0f172a;
             color: white;
-            padding: 10px;
+            height: 100vh;
+            overflow: hidden; /* Locks the main body from scrolling */
+        }
+
+        .main-layout {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-direction: row;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 40px;
+        }
+
+        .controls-scroll-wrapper {
+            flex: 1;
+            max-width: 550px;
+            height: 100%;
+            overflow-y: auto; /* Only this part scrolls */
+            padding-right: 15px;
+            padding-bottom: 20px;
+        }
+
+        /* Custom scrollbar for the controls */
+        .controls-scroll-wrapper::-webkit-scrollbar { width: 8px; }
+        .controls-scroll-wrapper::-webkit-scrollbar-track { background: #0f172a; border-radius: 4px; }
+        .controls-scroll-wrapper::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .controls-scroll-wrapper::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .preview-fixed-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center; /* Centers the poster vertically */
+            justify-content: center;
+            height: 100%;
         }
 
         /* --- CONTROLS --- */
         .controls {
             width: 100%;
-            max-width: 500px;
             background: #1e293b;
-            padding: 15px;
+            padding: 20px;
             border-radius: 12px;
-            margin-bottom: 20px;
             border: 1px solid #334155;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
@@ -141,6 +171,7 @@
             overflow: hidden; 
             border: 2px solid #475569;
             border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         /* --- THE POSTER (Fixed 1080x1350) --- */
@@ -159,7 +190,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 80px 50px;
+            padding: 80px 50px 140px 50px;
             text-align: center;
         }
 
@@ -217,7 +248,7 @@
             width: 100%;
             gap: 30px;
             margin-top: auto;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
 
         .card {
@@ -257,7 +288,6 @@
             z-index: 10;
         }
 
-        /* Switched from img to div for better html2canvas support */
         .avatar-bg {
             width: 100%;
             height: 100%;
@@ -272,145 +302,185 @@
         .st-desc { font-size: 1.6rem; color: #e2e8f0; padding: 0 10px; line-height: 1.4; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
         .footer {
-            border-top: 2px solid rgba(255,255,255,0.2);
+            position: absolute;
+            bottom: 0;
+            left: 0;
             width: 100%;
-            padding-top: 30px;
+            background-color: #17243c; 
+            padding: 25px 0;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
         .footer-logo-img {
-            height: 140px;
+            height: 80px; 
             max-width: 80%;
             object-fit: contain;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 850px) {
+            body { 
+                height: auto; 
+                overflow: auto; /* Re-enable body scroll on small screens */
+            }
+            .main-layout { 
+                flex-direction: column; 
+                height: auto; 
+                padding: 10px; 
+                gap: 20px;
+            }
+            .controls-scroll-wrapper { 
+                max-width: 100%; 
+                overflow-y: visible; /* Let it flow normally */
+                height: auto; 
+                padding-right: 0; 
+            }
+            .preview-fixed-wrapper { 
+                position: sticky; /* Keeps it locked at the top of the mobile screen */
+                top: 10px; 
+                z-index: 100; 
+                padding-bottom: 10px;
+            }
+            #preview-window { 
+                max-width: 350px; /* Make it slightly smaller on mobile so inputs are reachable */
+            }
         }
 
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <h2 style="text-align:center; color:var(--accent-blue); margin-bottom:15px;">ASP Poster Tool</h2>
+    <div class="main-layout">
         
-        <div class="input-group">
-            <label>Date & Day</label>
-            <input type="text" id="in-date" value="৬ ফেব্রুয়ারি ২০২৬ | শুক্রবার" oninput="updatePoster()">
-        </div>
-        <div class="input-group">
-            <label>Time</label>
-            <input type="text" id="in-time" value="সকাল ৯:০০" oninput="updatePoster()">
-        </div>
-        <div class="input-group">
-            <label>Location</label>
-            <input type="text" id="in-loc" value="রাজধরপুর মাধ্যমিক বিদ্যালয়" oninput="updatePoster()">
-        </div>
-
-        <div class="section-title">Instructor 1 (Primary)</div>
-        <input type="text" id="in-n1" value="গোলাম রাব্বি" oninput="updatePoster()" placeholder="Name">
-        <input type="text" id="in-d1" value="যন্ত্রকৌশল, খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়" oninput="updatePoster()" placeholder="Details">
-        <label class="file-upload-btn">
-            <i class="fas fa-camera"></i> Instructor Photo 1
-            <input type="file" accept="image/*" onchange="loadImg(this, 'img1')">
-        </label>
-        <div class="pos-controls">
-            <div class="slider-group">
-                <label>X-Axis <span>↔</span></label>
-                <input type="range" class="pos-slider" id="x1" min="0" max="100" value="50" oninput="adjustPos(1)">
-            </div>
-            <div class="slider-group">
-                <label>Y-Axis <span>↕</span></label>
-                <input type="range" class="pos-slider" id="y1" min="0" max="100" value="50" oninput="adjustPos(1)">
-            </div>
-        </div>
-
-        <div class="section-title">Instructor 2 (Junior)</div>
-        <input type="text" id="in-n2" value="তানভীর রানা রাব্বি" oninput="updatePoster()" placeholder="Name">
-        <input type="text" id="in-d2" value="কম্পিউটার বিজ্ঞান ও প্রকৌশল, ইউনিভার্সিটি অব ইনফরমেশন টেকনোলজি অ্যান্ড সায়েন্সেস" oninput="updatePoster()" placeholder="Details">
-        <label class="file-upload-btn">
-            <i class="fas fa-camera"></i> Instructor Photo 2
-            <input type="file" accept="image/*" onchange="loadImg(this, 'img2')">
-        </label>
-        <div class="pos-controls">
-            <div class="slider-group">
-                <label>X-Axis <span>↔</span></label>
-                <input type="range" class="pos-slider" id="x2" min="0" max="100" value="50" oninput="adjustPos(2)">
-            </div>
-            <div class="slider-group">
-                <label>Y-Axis <span>↕</span></label>
-                <input type="range" class="pos-slider" id="y2" min="0" max="100" value="50" oninput="adjustPos(2)">
-            </div>
-        </div>
-
-        <div class="section-title">Instructor 3 (Secondary)</div>
-        <input type="text" id="in-n3" value="আশিক রেজা" oninput="updatePoster()" placeholder="Name">
-        <input type="text" id="in-d3" value="পারমাণবিক প্রকৌশল, ঢাকা বিশ্ববিদ্যালয়" oninput="updatePoster()" placeholder="Details">
-        <label class="file-upload-btn">
-            <i class="fas fa-camera"></i> Instructor Photo 3
-            <input type="file" accept="image/*" onchange="loadImg(this, 'img3')">
-        </label>
-        <div class="pos-controls">
-            <div class="slider-group">
-                <label>X-Axis <span>↔</span></label>
-                <input type="range" class="pos-slider" id="x3" min="0" max="100" value="50" oninput="adjustPos(3)">
-            </div>
-            <div class="slider-group">
-                <label>Y-Axis <span>↕</span></label>
-                <input type="range" class="pos-slider" id="y3" min="0" max="100" value="50" oninput="adjustPos(3)">
-            </div>
-        </div>
-
-        <button id="download-btn" onclick="startDownload()">Download Poster</button>
-    </div>
-
-    <div id="preview-window">
-        <div id="poster">
-            
-            <div class="title-main">
-                <div>আমার স্কুল প্রজেক্ট এর নিয়মিত</div>
-                <div>গণিত ও বিজ্ঞান ক্লাস</div>
-            </div>
-
-            <div class="meta-container">
-                <div class="date-time-row">
-                    <i class="far fa-calendar-alt"></i> 
-                    <span id="out-date">৬ ফেব্রুয়ারি ২০২৬ | শুক্রবার</span> 
-                    <span>&nbsp;|&nbsp;</span>
-                    <i class="far fa-clock"></i> 
-                    <span id="out-time">সকাল ৯:০০</span>
-                </div>
+        <div class="controls-scroll-wrapper">
+            <div class="controls">
+                <h2 style="text-align:center; color:var(--accent-blue); margin-bottom:15px;">ASP Poster Tool</h2>
                 
-                <div class="location">
-                    <i class="fas fa-map-marker-alt"></i> <span id="out-loc">রাজধরপুর মাধ্যমিক বিদ্যালয়</span>
+                <div class="input-group">
+                    <label>Date & Day</label>
+                    <input type="text" id="in-date" value="৬ ফেব্রুয়ারি ২০২৬ | শুক্রবার" oninput="updatePoster()">
                 </div>
-            </div>
+                <div class="input-group">
+                    <label>Time</label>
+                    <input type="text" id="in-time" value="সকাল ৯:০০" oninput="updatePoster()">
+                </div>
+                <div class="input-group">
+                    <label>Location</label>
+                    <input type="text" id="in-loc" value="রাজধরপুর মাধ্যমিক বিদ্যালয়" oninput="updatePoster()">
+                </div>
 
-            <div class="cards-row">
-                <div class="card">
-                    <div class="pill" style="background:#a5b4fc">প্রাইমারি</div>
-                    <div class="avatar"><div id="img1" class="avatar-bg"></div></div>
-                    <div class="st-name" id="out-n1">গোলাম রাব্বি</div>
-                    <div class="st-desc" id="out-d1">যন্ত্রকৌশল, খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়</div>
+                <div class="section-title">Instructor 1 (Primary)</div>
+                <input type="text" id="in-n1" value="গোলাম রাব্বি" oninput="updatePoster()" placeholder="Name">
+                <input type="text" id="in-d1" value="যন্ত্রকৌশল, খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়" oninput="updatePoster()" placeholder="Details">
+                <label class="file-upload-btn">
+                    <i class="fas fa-camera"></i> Instructor Photo 1
+                    <input type="file" accept="image/*" onchange="loadImg(this, 'img1')">
+                </label>
+                <div class="pos-controls">
+                    <div class="slider-group">
+                        <label>X-Axis <span>↔</span></label>
+                        <input type="range" class="pos-slider" id="x1" min="0" max="100" value="50" oninput="adjustPos(1)">
+                    </div>
+                    <div class="slider-group">
+                        <label>Y-Axis <span>↕</span></label>
+                        <input type="range" class="pos-slider" id="y1" min="0" max="100" value="50" oninput="adjustPos(1)">
+                    </div>
                 </div>
-                <div class="card">
-                    <div class="pill" style="background:#93c5fd">জুনিয়র</div>
-                    <div class="avatar"><div id="img2" class="avatar-bg"></div></div>
-                    <div class="st-name" id="out-n2">তানভীর রানা রাব্বি</div>
-                    <div class="st-desc" id="out-d2">কম্পিউটার বিজ্ঞান ও প্রকৌশল, ইউনিভার্সিটি অব ইনফরমেশন টেকনোলজি অ্যান্ড সায়েন্সেস</div>
-                </div>
-                <div class="card">
-                    <div class="pill" style="background:#cbd5e1">সেকেন্ডারি</div>
-                    <div class="avatar"><div id="img3" class="avatar-bg"></div></div>
-                    <div class="st-name" id="out-n3">আশিক রেজা</div>
-                    <div class="st-desc" id="out-d3">পারমাণবিক প্রকৌশল, ঢাকা বিশ্ববিদ্যালয়</div>
-                </div>
-            </div>
 
-            <div class="footer">
-                <img id="footer-logo" class="footer-logo-img" src="asplogo.png" alt="ASP Logo" onerror="this.style.display='none'">
-            </div>
+                <div class="section-title">Instructor 2 (Junior)</div>
+                <input type="text" id="in-n2" value="তানভীর রানা রাব্বি" oninput="updatePoster()" placeholder="Name">
+                <input type="text" id="in-d2" value="কম্পিউটার বিজ্ঞান ও প্রকৌশল, ইউনিভার্সিটি অব ইনফরমেশন টেকনোলজি অ্যান্ড সায়েন্সেস" oninput="updatePoster()" placeholder="Details">
+                <label class="file-upload-btn">
+                    <i class="fas fa-camera"></i> Instructor Photo 2
+                    <input type="file" accept="image/*" onchange="loadImg(this, 'img2')">
+                </label>
+                <div class="pos-controls">
+                    <div class="slider-group">
+                        <label>X-Axis <span>↔</span></label>
+                        <input type="range" class="pos-slider" id="x2" min="0" max="100" value="50" oninput="adjustPos(2)">
+                    </div>
+                    <div class="slider-group">
+                        <label>Y-Axis <span>↕</span></label>
+                        <input type="range" class="pos-slider" id="y2" min="0" max="100" value="50" oninput="adjustPos(2)">
+                    </div>
+                </div>
 
+                <div class="section-title">Instructor 3 (Secondary)</div>
+                <input type="text" id="in-n3" value="আশিক রেজা" oninput="updatePoster()" placeholder="Name">
+                <input type="text" id="in-d3" value="পারমাণবিক প্রকৌশল, ঢাকা বিশ্ববিদ্যালয়" oninput="updatePoster()" placeholder="Details">
+                <label class="file-upload-btn">
+                    <i class="fas fa-camera"></i> Instructor Photo 3
+                    <input type="file" accept="image/*" onchange="loadImg(this, 'img3')">
+                </label>
+                <div class="pos-controls">
+                    <div class="slider-group">
+                        <label>X-Axis <span>↔</span></label>
+                        <input type="range" class="pos-slider" id="x3" min="0" max="100" value="50" oninput="adjustPos(3)">
+                    </div>
+                    <div class="slider-group">
+                        <label>Y-Axis <span>↕</span></label>
+                        <input type="range" class="pos-slider" id="y3" min="0" max="100" value="50" oninput="adjustPos(3)">
+                    </div>
+                </div>
+
+                <button id="download-btn" onclick="startDownload()">Download Poster</button>
+            </div>
         </div>
+
+        <div class="preview-fixed-wrapper">
+            <div id="preview-window">
+                <div id="poster">
+                    
+                    <div class="title-main">
+                        <div>আমার স্কুল প্রজেক্ট এর নিয়মিত</div>
+                        <div>গণিত ও বিজ্ঞান ক্লাস</div>
+                    </div>
+
+                    <div class="meta-container">
+                        <div class="date-time-row">
+                            <i class="far fa-calendar-alt"></i> 
+                            <span id="out-date">৬ ফেব্রুয়ারি ২০২৬ | শুক্রবার</span> 
+                            <span>&nbsp;|&nbsp;</span>
+                            <i class="far fa-clock"></i> 
+                            <span id="out-time">সকাল ৯:০০</span>
+                        </div>
+                        
+                        <div class="location">
+                            <i class="fas fa-map-marker-alt"></i> <span id="out-loc">রাজধরপুর মাধ্যমিক বিদ্যালয়</span>
+                        </div>
+                    </div>
+
+                    <div class="cards-row">
+                        <div class="card">
+                            <div class="pill" style="background:#a5b4fc">প্রাইমারি</div>
+                            <div class="avatar"><div id="img1" class="avatar-bg"></div></div>
+                            <div class="st-name" id="out-n1">গোলাম রাব্বি</div>
+                            <div class="st-desc" id="out-d1">যন্ত্রকৌশল, খুলনা প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয়</div>
+                        </div>
+                        <div class="card">
+                            <div class="pill" style="background:#93c5fd">জুনিয়র</div>
+                            <div class="avatar"><div id="img2" class="avatar-bg"></div></div>
+                            <div class="st-name" id="out-n2">তানভীর রানা রাব্বি</div>
+                            <div class="st-desc" id="out-d2">কম্পিউটার বিজ্ঞান ও প্রকৌশল, ইউনিভার্সিটি অব ইনফরমেশন টেকনোলজি অ্যান্ড সায়েন্সেস</div>
+                        </div>
+                        <div class="card">
+                            <div class="pill" style="background:#cbd5e1">সেকেন্ডারি</div>
+                            <div class="avatar"><div id="img3" class="avatar-bg"></div></div>
+                            <div class="st-name" id="out-n3">আশিক রেজা</div>
+                            <div class="st-desc" id="out-d3">পারমাণবিক প্রকৌশল, ঢাকা বিশ্ববিদ্যালয়</div>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <img id="footer-logo" class="footer-logo-img" src="asp-logo-dark.png" alt="ASP Logo" onerror="this.style.display='none'">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -427,7 +497,6 @@
             document.getElementById('out-d3').innerText = document.getElementById('in-d3').value;
         }
 
-        // Updated to use background-image
         function loadImg(input, targetId) {
             if(input.files && input.files[0]) {
                 var reader = new FileReader();
@@ -438,14 +507,12 @@
             }
         }
 
-        // Function to adjust background position
         function adjustPos(id) {
             const x = document.getElementById(`x${id}`).value;
             const y = document.getElementById(`y${id}`).value;
             document.getElementById(`img${id}`).style.backgroundPosition = `${x}% ${y}%`;
         }
 
-        // --- PREVIEW SCALER ---
         function resizePreview() {
             const container = document.getElementById('preview-window');
             const poster = document.getElementById('poster');
@@ -461,7 +528,6 @@
         window.addEventListener('load', resizePreview);
         window.addEventListener('resize', resizePreview);
 
-        // --- DOWNLOAD LOGIC ---
         function startDownload() {
             const btn = document.getElementById('download-btn');
             btn.innerText = 'Generating... (Please Wait)';
@@ -473,7 +539,6 @@
             const original = document.getElementById('poster');
             const btn = document.getElementById('download-btn');
 
-            // Clone to avoid glitching
             const clone = original.cloneNode(true);
             
             clone.style.position = 'fixed';
