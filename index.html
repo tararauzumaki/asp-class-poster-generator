@@ -27,7 +27,7 @@
             overflow: hidden; /* Locks body scroll */
         }
 
-        /* --- BIGGANBARTA STRUCTURAL LAYOUT --- */
+        /* --- STRUCTURAL LAYOUT --- */
         .app-container {
             display: flex;
             width: 100%;
@@ -76,7 +76,6 @@
             border-radius: 8px;
             overflow: hidden;
             position: relative;
-            /* Width and Height set by JS to force exact aspect ratio box */
         }
 
         /* --- CONTROLS UI --- */
@@ -170,23 +169,37 @@
         }
         .footer-logo-img { height: 95px; max-width: 90%; object-fit: contain; }
 
-        /* --- RESPONSIVE MOBILE UI (Like BigganBarta) --- */
+        /* --- RESPONSIVE MOBILE UI (SPLIT SCREEN FIX) --- */
         @media (max-width: 850px) {
-            body { height: auto; overflow: auto; display: block; }
+            /* Keep the body locked to the screen size */
+            body { overflow: hidden; } 
+            
+            /* Stack the layout vertically */
             .app-container { flex-direction: column; }
             
-            /* Order: Preview First, Controls Second */
-            .main-stage { height: 55vh; min-height: 450px; order: 1; padding: 15px; border-bottom: 1px solid var(--border); background-color: #020617; }
-            .sidebar { width: 100%; order: 2; border-right: none; box-shadow: none; overflow: visible; }
-            
-            .sidebar-content { padding-bottom: 120px; } /* Space for floating button */
-
-            /* Sticky Floating Action Bar */
-            .action-bar {
-                position: fixed; bottom: 0; left: 0; right: 0;
-                background: rgba(11, 17, 32, 0.95); backdrop-filter: blur(8px);
-                z-index: 100; padding: 15px; box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+            /* 1. Preview fixed securely at the top 45% of the screen */
+            .main-stage { 
+                flex: 0 0 45vh; 
+                height: 45vh; 
+                order: 1; 
+                padding: 15px; 
+                border-bottom: 1px solid var(--border); 
             }
+            
+            /* 2. Controls take up the bottom 55% of the screen */
+            .sidebar { 
+                flex: 1 1 auto; 
+                height: 55vh; 
+                width: 100%; 
+                order: 2; 
+                border-right: none; 
+            }
+            
+            /* .sidebar is already a flex-column, so .sidebar-content scrolls naturally inside it */
+            .sidebar-content { padding-bottom: 20px; }
+            
+            /* The action bar naturally docks to the bottom of the sidebar */
+            .action-bar { padding: 15px; }
         }
     </style>
 </head>
@@ -340,9 +353,7 @@
 
         function loadImg(input, targetId) {
             if(input.files && input.files[0]) {
-                // Update label text to show file was loaded
                 input.parentElement.querySelector('span').innerText = "Image Loaded";
-                
                 var reader = new FileReader();
                 reader.onload = function(e) { 
                     document.getElementById(targetId).style.backgroundImage = `url('${e.target.result}')`; 
@@ -357,7 +368,6 @@
             document.getElementById(`img${id}`).style.backgroundPosition = `${x}% ${y}%`;
         }
 
-        // --- THE BIGGANBARTA SCALING LOGIC (Adapted for 1080x1350) ---
         function resizePreview() {
             const stage = document.getElementById('stage');
             const wrapper = document.getElementById('preview-wrapper');
@@ -367,10 +377,10 @@
             const w = stage.clientWidth - 40; 
             const h = stage.clientHeight - 40;
             
-            // Calculate scale to fit BOTH width and height (Aspect ratio is 1080:1350 = 0.8)
+            // Scale to fit BOTH width and height precisely
             const scaleX = w / 1080;
             const scaleY = h / 1350;
-            const scale = Math.min(scaleX, scaleY); // Pick the scale that ensures it fits perfectly
+            const scale = Math.min(scaleX, scaleY);
 
             // Force wrapper to exact bounding box of the scaled poster
             wrapper.style.width = (1080 * scale) + "px";
