@@ -22,7 +22,8 @@
         body {
             background-color: #0f172a;
             color: white;
-            height: 100vh;
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Modern fix for mobile browser toolbars */
             display: flex;
             overflow: hidden; /* Locks body scroll */
         }
@@ -45,6 +46,7 @@
             z-index: 20;
             box-shadow: 4px 0 24px rgba(0,0,0,0.2);
             flex-shrink: 0;
+            position: relative;
         }
 
         .sidebar-content {
@@ -133,7 +135,7 @@
             background-color: #0f172a;
             background-image: 
                 linear-gradient(rgba(15, 23, 42, 0.7), rgba(2, 6, 23, 0.9)),
-                url('https://i.imgur.com/JBe2yUP.png');
+                url('https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?q=80&w=774&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -169,37 +171,48 @@
         }
         .footer-logo-img { height: 95px; max-width: 90%; object-fit: contain; }
 
-        /* --- RESPONSIVE MOBILE UI (SPLIT SCREEN FIX) --- */
+        /* --- RESPONSIVE MOBILE UI --- */
         @media (max-width: 850px) {
-            /* Keep the body locked to the screen size */
             body { overflow: hidden; } 
             
-            /* Stack the layout vertically */
             .app-container { flex-direction: column; }
             
-            /* 1. Preview fixed securely at the top 45% of the screen */
             .main-stage { 
                 flex: 0 0 45vh; 
+                flex: 0 0 45dvh; /* dynamic viewport */
                 height: 45vh; 
+                height: 45dvh;
                 order: 1; 
                 padding: 15px; 
                 border-bottom: 1px solid var(--border); 
             }
             
-            /* 2. Controls take up the bottom 55% of the screen */
             .sidebar { 
                 flex: 1 1 auto; 
                 height: 55vh; 
+                height: 55dvh;
                 width: 100%; 
                 order: 2; 
                 border-right: none; 
             }
             
-            /* .sidebar is already a flex-column, so .sidebar-content scrolls naturally inside it */
-            .sidebar-content { padding-bottom: 20px; }
+            .sidebar-content { 
+                padding-bottom: 110px; /* Space so the last input doesn't hide behind the floating button */
+            }
             
-            /* The action bar naturally docks to the bottom of the sidebar */
-            .action-bar { padding: 15px; }
+            /* Sticky Floating Action Bar perfectly locked to bottom */
+            .action-bar { 
+                position: fixed; 
+                bottom: 0; 
+                left: 0; 
+                right: 0;
+                background: rgba(11, 17, 32, 0.95); 
+                backdrop-filter: blur(8px);
+                z-index: 100; 
+                padding: 15px 20px; 
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+                border-top: 1px solid var(--border);
+            }
         }
     </style>
 </head>
