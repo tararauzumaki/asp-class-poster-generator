@@ -179,7 +179,7 @@
             
             .main-stage { 
                 flex: 0 0 45vh; 
-                flex: 0 0 45dvh; /* dynamic viewport */
+                flex: 0 0 45dvh; 
                 height: 45vh; 
                 height: 45dvh;
                 order: 1; 
@@ -197,10 +197,9 @@
             }
             
             .sidebar-content { 
-                padding-bottom: 110px; /* Space so the last input doesn't hide behind the floating button */
+                padding-bottom: 110px; /* Buffer for floating button */
             }
             
-            /* Sticky Floating Action Bar perfectly locked to bottom */
             .action-bar { 
                 position: fixed; 
                 bottom: 0; 
@@ -208,7 +207,7 @@
                 right: 0;
                 background: rgba(11, 17, 32, 0.95); 
                 backdrop-filter: blur(8px);
-                z-index: 100; 
+                z-index: 1000; /* Increased z-index */
                 padding: 15px 20px; 
                 box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
                 border-top: 1px solid var(--border);
@@ -407,7 +406,7 @@
         window.addEventListener('resize', resizePreview);
 
         function startDownload() {
-            const btn = document.getElementById('download-btn');
+            const btn = document.getElementById('downloadBtn'); // FIXED ID MATCH
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             btn.disabled = true;
@@ -416,7 +415,7 @@
 
         function executeDownload(originalText) {
             const original = document.getElementById('poster');
-            const btn = document.getElementById('download-btn');
+            const btn = document.getElementById('downloadBtn'); // FIXED ID MATCH
 
             const clone = original.cloneNode(true);
             clone.style.position = 'fixed';
